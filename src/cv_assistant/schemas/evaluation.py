@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
-from typing import Annotated
 
 
 class StrictModel(BaseModel):
@@ -36,7 +35,7 @@ class ProbingQuestion(StrictModel):
 class ApprovalEvent(StrictModel):
     decision: Literal["APPROVE", "REVISE"]
     reviewer_id: str | None = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     note: str | None = None
 
 
@@ -44,7 +43,7 @@ class EvaluationMetadata(StrictModel):
     model: str
     prompt_version: str
     software_version: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     status: Literal["awaiting_approval", "approved", "revision_requested", "complete"]
     confidence: Confidence
 

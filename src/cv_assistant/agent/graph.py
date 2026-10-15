@@ -6,6 +6,7 @@ from contextlib import contextmanager
 
 os.environ.setdefault("LANGGRAPH_STRICT_MSGPACK", "true")
 
+from cryptography.fernet import Fernet
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.serde.encrypted import EncryptedSerializer
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
@@ -22,7 +23,6 @@ from cv_assistant.agent.nodes import (
 from cv_assistant.agent.state import EvaluationState
 from cv_assistant.config import get_settings
 from cv_assistant.memory.audit_store import get_audit_store
-from cryptography.fernet import Fernet
 
 
 class _FernetCipher:

@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+
 class EvaluationState(TypedDict, total=False):
     candidate_id: str
     resume_ciphertext: str

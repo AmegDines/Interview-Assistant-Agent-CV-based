@@ -8,9 +8,9 @@ import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWKClient
 from langgraph.types import Command
 from pydantic import BaseModel, ConfigDict
-from jwt import PyJWKClient
 
 from cv_assistant.agent.graph import graph_runtime
 from cv_assistant.config import get_settings, validate_production_readiness
@@ -147,7 +147,7 @@ def create_app() -> FastAPI:
         evaluation_id: UUID,
         user: Annotated[AuthenticatedUser, Depends(current_user)],
     ) -> dict:
-        config, snapshot, values = owned_state(evaluation_id, user)
+        _config, snapshot, values = owned_state(evaluation_id, user)
         if "evaluator" not in user.roles and "reviewer" not in user.roles:
             raise HTTPException(status_code=403, detail="Insufficient role")
         if values.get("requested_by") != user.subject and "reviewer" not in user.roles:

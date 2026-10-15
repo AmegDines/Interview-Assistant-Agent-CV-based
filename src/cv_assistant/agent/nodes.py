@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 import re
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from groq import APIConnectionError, APITimeoutError, InternalServerError, RateLimitError
@@ -16,7 +15,12 @@ from cv_assistant.agent.state import EvaluationState
 from cv_assistant.config import get_settings
 from cv_assistant.memory.audit_store import sha256_json
 from cv_assistant.schemas.evaluation import (
-    ApprovalEvent, Confidence, EvaluationMetadata, ProbingQuestion, ResumeEvaluationReport, WeakPoint,
+    ApprovalEvent,
+    Confidence,
+    EvaluationMetadata,
+    ProbingQuestion,
+    ResumeEvaluationReport,
+    WeakPoint,
 )
 from cv_assistant.schemas.resume import ResumeFacts
 from cv_assistant.security import decrypt_resume
@@ -48,10 +52,10 @@ def _client_call(system: str, user: str, schema: str) -> dict:
             return json.loads(message.content or "{}")
         except TRANSIENT_ERRORS as exc:
             if attempt + 1 >= settings.max_retry_attempts:
-                logger.error("Provider operation exhausted retries", extra={"error_type": type(exc).__name__, "retry_count": attempt + 1, "message": "transient provider operation failed"})
+                logger.error("Provider operation exhausted retries", extra={"error_type": type(exc).__name__, "retry_count": attempt + 1, "failure_context": "transient provider operation failed"})
                 raise
             delay = settings.retry_base_delay_seconds * (2**attempt)
-            logger.warning("Transient provider error; retrying", extra={"error_type": type(exc).__name__, "retry_count": attempt + 1, "message": "transient provider operation failed"})
+            logger.warning("Transient provider error; retrying", extra={"error_type": type(exc).__name__, "retry_count": attempt + 1, "failure_context": "transient provider operation failed"})
             time.sleep(delay)
     raise RuntimeError("Provider retry loop exited unexpectedly")
 
@@ -63,7 +67,7 @@ def _audit(node: str, input_value: object, output_value: object, started: float)
     settings = get_settings()
     get_audit_store().append({
         "node": node,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "input_hash": sha256_json(input_value),
         "output_hash": sha256_json(output_value),
         "model": settings.groq_model,
